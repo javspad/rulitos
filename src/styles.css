@@ -1,0 +1,20 @@
+body {
+  font-family: sans-serif;
+}
+
+th,
+td {
+  padding: 0.5rem 1rem;
+  min-width: 5rem;
+  text-align: center;
+  border: 1px solid black;
+  margin: 0;
+}
+
+.red {
+  color: red;
+}
+
+.green {
+  color: green;
+}
