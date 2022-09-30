@@ -134,14 +134,14 @@ async function cargarDatos() {
     "https://mercados.ambito.com//dolarrava/mep/variacion"
   );
   const dolarCripto = await buscarDolarCripto();
-  console.log({
-    dolarOficial,
-    dolarBlue,
-    dolarCcl,
-    dolarSolidario,
-    dolarMep,
-    dolarCripto,
-  });
+  //   console.log({
+  //     dolarOficial,
+  //     dolarBlue,
+  //     dolarCcl,
+  //     dolarSolidario,
+  //     dolarMep,
+  //     dolarCripto,
+  //   });
   valoresDolar.blue = { ...valoresDolar.blue, ...dolarBlue };
   valoresDolar.oficial = { ...valoresDolar.oficial, ...dolarOficial };
   valoresDolar.mep = { ...valoresDolar.mep, ...dolarMep };
