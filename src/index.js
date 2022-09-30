@@ -7,7 +7,7 @@ const valoresDolar = {
   ccl: { nombre: "CCL", compra: 0, venta: 0 },
   crypto: { nombre: "Crypto", compra: 0, venta: 0 },
   solidario: { nombre: "Solidario", venta: 0 },
-  oficial: { nombre: "Oficial", compra: 0, venta: 0 }
+  oficial: { nombre: "Oficial", compra: 0, venta: 0 },
 };
 let diferenciasDolar = {};
 
@@ -80,7 +80,7 @@ function generarFila(fila) {
 function generarTablaArbitrajes() {
   tablaArbitrajes.innerHTML += generarFila([
     "Pesos",
-    ...Object.keys(diferenciasDolar)
+    ...Object.keys(diferenciasDolar),
   ]);
   for (let dolar of Object.entries(diferenciasDolar)) {
     // console.log(dolar);
@@ -98,7 +98,7 @@ async function buscarDolar(url) {
   const data = await response.json();
   return {
     venta: parseFloat(data.venta.replace(",", ".")),
-    compra: parseFloat(data.compra.replace(",", "."))
+    compra: parseFloat(data.compra.replace(",", ".")),
   };
 }
 
@@ -106,14 +106,14 @@ async function buscarDolarCripto() {
   const options = { method: "GET" };
 
   const response = await fetch(
-    "https://cors-anywhere.herokuapp.com/https://app.ripio.com/api/v3/public/rates/?country=AR",
+    "https://criptoya.com/api/belo/usdt/ars/0.5",
     options
   );
   const data = await response.json();
-  const valorUsdt = data.find((valor) => valor.ticker === "USDT_ARS");
+  const valorUsdt = data;
   return {
-    compra: parseFloat(valorUsdt.buy_rate),
-    venta: parseFloat(valorUsdt.sell_rate)
+    compra: parseFloat(valorUsdt.bid),
+    venta: parseFloat(valorUsdt.ask),
   };
 }
 
@@ -134,14 +134,14 @@ async function cargarDatos() {
     "https://mercados.ambito.com//dolarrava/mep/variacion"
   );
   const dolarCripto = await buscarDolarCripto();
-  // console.log({
-  //   dolarOficial,
-  //   dolarBlue,
-  //   dolarCcl,
-  //   dolarSolidario,
-  //   dolarMep,
-  //   dolarCripto
-  // });
+  console.log({
+    dolarOficial,
+    dolarBlue,
+    dolarCcl,
+    dolarSolidario,
+    dolarMep,
+    dolarCripto,
+  });
   valoresDolar.blue = { ...valoresDolar.blue, ...dolarBlue };
   valoresDolar.oficial = { ...valoresDolar.oficial, ...dolarOficial };
   valoresDolar.mep = { ...valoresDolar.mep, ...dolarMep };
