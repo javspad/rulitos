@@ -387,14 +387,14 @@ function _cargarDatos() {
 
           case 17:
             dolarCripto = _context3.sent;
-            console.log({
-              dolarOficial: dolarOficial,
-              dolarBlue: dolarBlue,
-              dolarCcl: dolarCcl,
-              dolarSolidario: dolarSolidario,
-              dolarMep: dolarMep,
-              dolarCripto: dolarCripto
-            });
+            //   console.log({
+            //     dolarOficial,
+            //     dolarBlue,
+            //     dolarCcl,
+            //     dolarSolidario,
+            //     dolarMep,
+            //     dolarCripto,
+            //   });
             valoresDolar.blue = _objectSpread(_objectSpread({}, valoresDolar.blue), dolarBlue);
             valoresDolar.oficial = _objectSpread(_objectSpread({}, valoresDolar.oficial), dolarOficial);
             valoresDolar.mep = _objectSpread(_objectSpread({}, valoresDolar.mep), dolarMep);
@@ -402,7 +402,7 @@ function _cargarDatos() {
             valoresDolar.solidario = _objectSpread(_objectSpread({}, valoresDolar.solidario), dolarSolidario);
             valoresDolar.crypto = _objectSpread(_objectSpread({}, valoresDolar.crypto), dolarCripto);
 
-          case 25:
+          case 24:
           case "end":
             return _context3.stop();
         }
