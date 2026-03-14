@@ -17,7 +17,6 @@
  * }
  */
 
-export const config = { runtime: 'edge' };
 
 // ─── Tasas hardcoded de fallback (Etapa 2) ───────────────────────────────────
 // Se usan cuando BYMA no responde o tarda más de 4 segundos.
