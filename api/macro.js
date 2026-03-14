@@ -22,7 +22,6 @@
  * }
  */
 
-export const config = { runtime: 'edge' };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function tea_pf(tna) {
