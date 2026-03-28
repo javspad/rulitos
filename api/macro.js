@@ -46,7 +46,12 @@ export default async function handler(req) {
   let plazosFixed = [];
   if (Array.isArray(pfData) && pfData.length) {
     plazosFixed = pfData
-      .map(p => ({ banco: p.entidad || p.banco || p.nombre || '?', tna: parseFloat(p.tnaClientes || p.tna || 0) }))
+      .map(p => {
+        const rawTna = parseFloat(p.tnaClientes ?? p.tna ?? 0);
+        // argentinadatos devuelve tnaClientes como decimal (0.22 = 22%)
+        const tna = rawTna > 0 && rawTna < 2 ? rawTna * 100 : rawTna;
+        return { banco: p.entidad || p.banco || p.nombre || '?', tna };
+      })
       .filter(p => p.tna > 0)
       .sort((a, b) => b.tna - a.tna)
       .slice(0, 6)
