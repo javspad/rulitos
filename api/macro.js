@@ -46,7 +46,7 @@ export default async function handler(req) {
   let plazosFixed = [];
   if (Array.isArray(pfData) && pfData.length) {
     plazosFixed = pfData
-      .map(p => ({ banco: p.entidad || p.banco || p.nombre || '?', tna: parseFloat(p.tna || 0) }))
+      .map(p => ({ banco: p.entidad || p.banco || p.nombre || '?', tna: parseFloat(p.tnaClientes || p.tna || 0) }))
       .filter(p => p.tna > 0)
       .sort((a, b) => b.tna - a.tna)
       .slice(0, 6)
