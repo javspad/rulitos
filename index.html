@@ -100,8 +100,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 .leg-lbl{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text3)}
 #chart-src{font-size:11px;color:var(--text4);margin-top:8px}
 .chart-wrap{position:relative;height:280px}.cshell{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
-.cnav{display:flex;border-bottom:1px solid var(--border);background:var(--surface2)}
-.cnav-b{flex:1;padding:14px 20px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);cursor:pointer;transition:all .2s}
+.cnav{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);overflow-x:auto;scrollbar-width:none}.cnav::-webkit-scrollbar{display:none}
+.cnav-b{flex:0 0 auto;padding:14px 20px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);cursor:pointer;transition:all .2s;white-space:nowrap}
 .cnav-b:hover{color:var(--text2)}.cnav-b.on{color:var(--gold);border-bottom-color:var(--gold);background:var(--surface)}
 .cpanel{display:none;padding:30px}.cpanel.on{display:block}
 .irow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
