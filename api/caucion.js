@@ -4,13 +4,13 @@ const API_KEY_UAT  = '1ypnPqtlG64lJIjrRN0DNut0hlIcQ502MiAbyo2g';
 const API_KEY_PROD = 'nuDX73vj2483KSUgvenkj9t50oA0vgvA4WcuRAER';
 const BASE_URL = 'https://servicios.mae.com.ar/api/v1';
 
-// Fallback hardcoded por si MAE no responde
+// Fallback hardcoded por si MAE no responde — actualizado mar-2026
 const FALLBACK = [
-  { plazo: '001', codigoPlazo: '001', Ultimatasa: 35.0 },
-  { plazo: '007', codigoPlazo: '007', Ultimatasa: 35.2 },
-  { plazo: '030', codigoPlazo: '030', Ultimatasa: 35.5 },
-  { plazo: '060', codigoPlazo: '060', Ultimatasa: 35.8 },
-  { plazo: '090', codigoPlazo: '090', Ultimatasa: 36.0 },
+  { plazo: '001', codigoPlazo: '001', Ultimatasa: 38.0 },
+  { plazo: '007', codigoPlazo: '007', Ultimatasa: 38.5 },
+  { plazo: '030', codigoPlazo: '030', Ultimatasa: 39.0 },
+  { plazo: '060', codigoPlazo: '060', Ultimatasa: 39.5 },
+  { plazo: '090', codigoPlazo: '090', Ultimatasa: 40.0 },
 ];
 
 export default async function handler(req) {

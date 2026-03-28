@@ -19,9 +19,9 @@ export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
 
   const [rpData, infData, pfData] = await Promise.all([
-    sf('https://argentinadatos.com/v1/finanzas/indices/riesgo-pais/ultimo'),
-    sf('https://argentinadatos.com/v1/finanzas/indices/inflacion'),
-    sf('https://argentinadatos.com/v1/finanzas/tasas/plazo-fijo'),
+    sf('https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais/ultimo'),
+    sf('https://api.argentinadatos.com/v1/finanzas/indices/inflacion'),
+    sf('https://api.argentinadatos.com/v1/finanzas/tasas/plazoFijo'),
   ]);
 
   // Riesgo pais
@@ -53,8 +53,10 @@ export default async function handler(req) {
       .map(p => ({ ...p, tea: +((Math.pow(1 + p.tna / 100 / 12, 12) - 1) * 100).toFixed(2) }));
   }
 
+  const source = (riesgoPais != null || inflacion != null || plazosFixed.length > 0) ? 'live' : 'error';
   return new Response(JSON.stringify({
     ok: true,
+    source,
     ts: new Date().toISOString(),
     riesgoPais,
     inflacion,

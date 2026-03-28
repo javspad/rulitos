@@ -1,3 +1,5 @@
+export const config = { runtime: 'edge' };
+
 /**
  * api/lecaps.js — Vercel Edge Function
  * Proxy a open.bymadata.com.ar para datos de LECAPs en tiempo real

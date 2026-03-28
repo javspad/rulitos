@@ -7,6 +7,9 @@
           },
           "api/macro.js": {
                   "maxDuration": 10
+          },
+          "api/caucion.js": {
+                  "maxDuration": 10
           }
     },
     "headers": [
