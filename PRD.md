@@ -107,11 +107,11 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como desarrollador, quiero que el código JavaScript esté en un archivo separado `app.js` para evitar el problema de ensamblado que causó la corrupción anterior.
 
 **Criterios de aceptación:**
-- [ ] Crear `/app.js` en la raíz del proyecto con todo el contenido del `<script>` principal de `index.html` (desde `'use strict';` hasta el último `refresh();`)
-- [ ] En `index.html`, reemplazar el bloque `<script>...</script>` con `<script src="/app.js" defer></script>`
-- [ ] El `<script>` de Chart.js CDN queda tal cual (antes de app.js)
-- [ ] Verificar que `app.js` tiene exactamente el mismo JS que estaba en index.html (sin cambios funcionales)
-- [ ] Verificar que la página carga y el dashboard funciona (dólar visible, calculadora responde)
+- [x] Crear `/app.js` en la raíz del proyecto con todo el contenido del `<script>` principal de `index.html` (desde `'use strict';` hasta el último `refresh();`)
+- [x] En `index.html`, reemplazar el bloque `<script>...</script>` con `<script src="/app.js" defer></script>`
+- [x] El `<script>` de Chart.js CDN queda tal cual (antes de app.js)
+- [x] Verificar que `app.js` tiene exactamente el mismo JS que estaba en index.html (sin cambios funcionales)
+- [x] Verificar que la página carga y el dashboard funciona (dólar visible, calculadora responde)
 
 ### US-009: Gráfico histórico de riesgo país
 **Descripción:** Como usuario, quiero ver la evolución histórica del riesgo país en un gráfico de línea en la sección macro.
