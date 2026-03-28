@@ -117,12 +117,12 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como usuario, quiero ver la evolución histórica del riesgo país en un gráfico de línea en la sección macro.
 
 **Criterios de aceptación:**
-- [ ] En `api/macro.js`, agregar fetch a `https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais` (serie histórica, últimos 365 días)
-- [ ] Agregar campo `riesgoPaisHist: [{ fecha, valor }, ...]` en la response con los últimos 90 puntos máximo (para no sobrecargar)
-- [ ] En `index.html`, dentro del panel macro, agregar un `<canvas id="rp-chart">` de altura 120px debajo del card de riesgo país
-- [ ] En `rMac()`, si `MAC.riesgoPaisHist` tiene datos, renderizar un Chart.js line chart minimal (sin eje Y, sin leyenda, solo la línea dorada)
-- [ ] Si no hay datos históricos, no mostrar el canvas (display:none)
-- [ ] Verificar que el gráfico se ve en tema oscuro y claro
+- [x] En `api/macro.js`, agregar fetch a `https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais` (serie histórica, últimos 365 días)
+- [x] Agregar campo `riesgoPaisHist: [{ fecha, valor }, ...]` en la response con los últimos 90 puntos máximo (para no sobrecargar)
+- [x] En `index.html`, dentro del panel macro, agregar un `<canvas id="rp-chart">` de altura 120px debajo del card de riesgo país
+- [x] En `rMac()`, si `MAC.riesgoPaisHist` tiene datos, renderizar un Chart.js line chart minimal (sin eje Y, sin leyenda, solo la línea dorada)
+- [x] Si no hay datos históricos, no mostrar el canvas (display:none)
+- [x] Verificar que el gráfico se ve en tema oscuro y claro
 
 ### US-010: PWA offline — cachear últimos datos conocidos
 **Descripción:** Como usuario, quiero que el dashboard muestre los últimos datos disponibles cuando no tengo conexión, en lugar de una pantalla vacía.

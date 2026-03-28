@@ -20,11 +20,12 @@ export default async function handler(req) {
 
   const today = new Date().toISOString().slice(0, 10);
   const desde = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-  const [rpData, infData, pfData, tamarData] = await Promise.all([
+  const [rpData, infData, pfData, tamarData, rpHistData] = await Promise.all([
     sf('https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais/ultimo'),
     sf('https://api.argentinadatos.com/v1/finanzas/indices/inflacion'),
     sf('https://api.argentinadatos.com/v1/finanzas/tasas/plazoFijo'),
     sf(`https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/6?desde=${desde}&hasta=${today}`),
+    sf('https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais'),
   ]);
 
   // Riesgo pais
@@ -68,12 +69,20 @@ export default async function handler(req) {
     if (sorted[0]?.valor != null) tamar = { valor: parseFloat(sorted[0].valor), fecha: sorted[0].fecha };
   }
 
+  // Riesgo país histórico (últimos 90 puntos)
+  let riesgoPaisHist = [];
+  if (Array.isArray(rpHistData) && rpHistData.length) {
+    const sorted = [...rpHistData].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    riesgoPaisHist = sorted.slice(-90).map(p => ({ fecha: p.fecha, valor: p.valor }));
+  }
+
   const source = (riesgoPais != null || inflacion != null || plazosFixed.length > 0) ? 'live' : 'error';
   return new Response(JSON.stringify({
     ok: true,
     source,
     ts: new Date().toISOString(),
     riesgoPais,
+    riesgoPaisHist,
     inflacion,
     plazosFixed,
     tamar,
