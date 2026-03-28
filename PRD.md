@@ -87,10 +87,10 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como usuario, quiero saber claramente qué datos son en tiempo real y cuáles son de referencia, con indicadores más visibles.
 
 **Criterios de aceptación:**
-- [ ] En `index.html`, en la función `rMac()` agregar indicador de source para `plazosFixed`: si `MAC.plazosFixed.length > 0` mostrar punto verde + "argentinadatos", sino mostrar punto gris + "sin datos"
-- [ ] En la sección de cotizaciones dólar, mostrar badge "LIVE" o "DEMO" según si DOL tiene datos reales (`DOL.length > 0` con `fechaActualizacion` reciente vs vacío)
-- [ ] En la barra superior (`#ldot` / `#ltxt`), mostrar texto más informativo: "En vivo — Dólar, Macro, LECAPs" o listar qué fuentes fallaron: "Parcial — Sin caucion live"
-- [ ] Verificar que los indicadores se ven correctamente en tema oscuro y claro
+- [x] En `index.html`, en la función `rMac()` agregar indicador de source para `plazosFixed`: si `MAC.plazosFixed.length > 0` mostrar punto verde + "argentinadatos", sino mostrar punto gris + "sin datos"
+- [x] En la sección de cotizaciones dólar, mostrar badge "LIVE" o "DEMO" según si DOL tiene datos reales (`DOL.length > 0` con `fechaActualizacion` reciente vs vacío)
+- [x] En la barra superior (`#ldot` / `#ltxt`), mostrar texto más informativo: "En vivo — Dólar, Macro, LECAPs" o listar qué fuentes fallaron: "Parcial — Sin caucion live"
+- [x] Verificar que los indicadores se ven correctamente en tema oscuro y claro
 
 ### US-007: Agregar TAMAR / Tasa de Política Monetaria desde BCRA
 **Descripción:** Como usuario, quiero ver la Tasa de Política Monetaria (TAMAR) en el panel macro para tener referencia del piso de tasas del BCRA.
