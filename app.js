@@ -166,9 +166,97 @@ function runRolling(){
 // Auto-sync TNA from CAU when data loads
 function syncRlTna(){
   const rate=getTasaBase();
-  if(rate>0) document.getElementById('rl-t').value=n2(rate);
+  if(rate>0){document.getElementById('rl-t').value=n2(rate);document.getElementById('ct-t').value=n2(rate);}
 }
 // ===== FIN SIMULADOR ROLLING =====
+
+// ===== CARRY TRADE: TOMAR CAUCION → COMPRAR LECAP =====
+function getBestCarryLecap(tnaCau){
+  const active=LEC.filter(l=>(l.diasRestantes||0)>0);
+  if(!active.length)return null;
+  // LECAP con mayor spread sobre la tasa de caucion actual
+  return active.reduce((best,l)=>(l.tna-tnaCau)>(best.tna-tnaCau)?l:best);
+}
+function calcBreakEven(capPropio,capPrestado,dias,tnLecap){
+  // Tasa de caucion promedio constante que hace P&L = 0
+  // (capPropio+capPrestado)*(1+tnLecap/100*dias/365) - capPrestado*(1+tnaCorte/100*dias/365) - capPropio = 0
+  const totalInvertido=capPropio+capPrestado;
+  const lecapFinal=totalInvertido*(1+tnLecap/100*dias/365);
+  const targetDebt=lecapFinal-capPropio;
+  return((targetDebt/capPrestado)-1)/(dias/365)*100;
+}
+function simCarry(capPropio,capPrestado,dias,tnLecap,tnCauBase,varMax,nSim){
+  const totalInvertido=capPropio+capPrestado;
+  const lecapFinal=totalInvertido*(1+tnLecap/100*dias/365);
+  const results=[];
+  for(let s=0;s<nSim;s++){
+    let deuda=capPrestado;
+    let tnAcum=0,tnPico=0;
+    for(let d=0;d<dias;d++){
+      const delta=(Math.random()*2-1)*(varMax/100)*tnCauBase;
+      const tnHoy=Math.max(1,tnCauBase+delta);
+      tnAcum+=tnHoy;tnPico=Math.max(tnPico,tnHoy);
+      deuda*=(1+tnHoy/100/365);
+    }
+    const tnPromedio=tnAcum/dias;
+    const ganancia=lecapFinal-deuda-capPropio;
+    results.push({ganancia,roe:ganancia/capPropio*100,deudaFinal:deuda,lecapFinal,tnPromedio,tnPico,rentable:ganancia>0});
+  }
+  return{results,lecapFinal};
+}
+let carryChart=null;
+function runCarry(){
+  const capPropio=parseFloat(document.getElementById('ct-own').value.replace(/[.$\s]/g,'').replace(',','.'))||1000000;
+  const capPrestado=parseFloat(document.getElementById('ct-borrow').value.replace(/[.$\s]/g,'').replace(',','.'))||1000000;
+  const tnCauBase=parseFloat(document.getElementById('ct-t').value)||getTasaBase();
+  const varMax=parseFloat(document.getElementById('ct-v').value)||10;
+  const nSim=parseInt(document.getElementById('ct-s').value)||500;
+  const lec=getBestCarryLecap(tnCauBase);
+  if(!lec){document.getElementById('ct-lec-info').textContent='Sin datos de LECAPs. Cargando...';return;}
+  const dias=lec.diasRestantes;
+  const tnLecap=lec.tna;
+  const spread=tnLecap-tnCauBase;
+  document.getElementById('ct-lec-info').innerHTML=`LECAP seleccionada: <strong>${lec.especie}</strong> &mdash; TNA ${n2(tnLecap)}% &mdash; vence en ${dias} días &mdash; spread actual: <strong style="color:var(--${spread>0?'green':'red'})">${spread>0?'+':''}${n2(spread)}pp</strong>`;
+  const breakEven=calcBreakEven(capPropio,capPrestado,dias,tnLecap);
+  const {results,lecapFinal}=simCarry(capPropio,capPrestado,dias,tnLecap,tnCauBase,varMax,nSim);
+  results.sort((a,b)=>a.ganancia-b.ganancia);
+  const p=f=>results[Math.min(nSim-1,Math.floor(nSim*f))];
+  const pctProfit=results.filter(r=>r.rentable).length/nSim*100;
+  const gananciaBase=(capPropio+capPrestado)*(1+tnLecap/100*dias/365)-capPrestado*(1+tnCauBase/100*dias/365)-capPropio;
+  const leverage=(capPropio+capPrestado)/capPropio;
+  // Stats
+  const stats=[
+    {l:'Caso base (caucion fija)',v:'$'+nm(gananciaBase),s:'ROE '+n2(gananciaBase/capPropio*100)+'% sobre capital propio',c:gananciaBase>0?'green':'red'},
+    {l:'Tasa de corte',v:n2(breakEven)+'% TNA',s:'Maximo caucion para no perder',c:'gold'},
+    {l:'Escenarios con ganancia',v:n2(pctProfit)+'%',s:'de '+nSim+' simulaciones MC',c:pctProfit>=80?'green':pctProfit>=50?'gold':'red'},
+    {l:'Apalancamiento',v:n2(leverage)+'x',s:'$'+nm(capPrestado)+' tomados en caucion',c:'blue'},
+  ];
+  document.getElementById('ct-stats').innerHTML=stats.map(s=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px"><div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">${s.l}</div><div style="font-family:JetBrains Mono,monospace;font-size:20px;font-weight:600;color:var(--${s.c==='gold'?'gold-l':s.c==='red'?'red':s.c==='green'?'green':'blue'});margin-bottom:4px">${s.v}</div><div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--text3)">${s.s}</div></div>`).join('');
+  // Histogram
+  const ganancias=results.map(r=>r.ganancia);
+  const gMin=ganancias[0],gMax=ganancias[nSim-1],bins=20,bw=(gMax-gMin)/bins;
+  const counts=Array(bins).fill(0);
+  ganancias.forEach(v=>{const i=Math.min(bins-1,Math.floor((v-gMin)/bw));counts[i]++;});
+  const colors=counts.map((_,i)=>(gMin+i*bw)>=0?'rgba(90,184,126,.65)':'rgba(212,97,78,.65)');
+  const isDk=document.documentElement.getAttribute('data-theme')==='dark';
+  const gc=isDk?'rgba(44,44,40,.5)':'rgba(180,175,166,.4)',tk=isDk?'#585450':'#a0988e';
+  if(carryChart){carryChart.destroy();carryChart=null;}
+  carryChart=new Chart(document.getElementById('ct-chart').getContext('2d'),{type:'bar',data:{labels:counts.map((_,i)=>'$'+nm(gMin+i*bw)),datasets:[{data:counts,backgroundColor:colors,borderColor:colors.map(c=>c.replace('.65','.9')),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'P&L: '+c[0].label,label:c=>c.parsed.y+' escenarios'}}},scales:{x:{grid:{color:gc},ticks:{color:tk,maxRotation:0,autoSkip:true,maxTicksLimit:7}},y:{grid:{color:gc},ticks:{color:tk}}}}});
+  // Table
+  document.getElementById('ct-table').innerHTML=[
+    {n:'Peor (P1)',r:p(0.01)},{n:'P10',r:p(0.10)},{n:'Mediana (P50)',r:p(0.50)},
+    {n:'P75',r:p(0.75)},{n:'P90',r:p(0.90)},{n:'Mejor (P99)',r:p(0.99)},
+  ].map(({n,r})=>`<tr style="border-bottom:1px solid var(--border-s)">
+    <td style="padding:9px 14px;color:var(--text);font-size:12px;font-weight:600">${n}</td>
+    <td style="padding:9px 14px;text-align:right;color:${r.ganancia>=0?'var(--green)':'var(--red)'};font-family:JetBrains Mono,monospace">${r.ganancia>=0?'+':''}$${nm(r.ganancia)}</td>
+    <td style="padding:9px 14px;text-align:right;color:var(--gold);font-family:JetBrains Mono,monospace">${n2(r.roe)}%</td>
+    <td style="padding:9px 14px;text-align:right;color:var(--text3);font-family:JetBrains Mono,monospace">${n2(r.tnPromedio)}%</td>
+    <td style="padding:9px 14px;text-align:right;color:var(--text3);font-family:JetBrains Mono,monospace">${n2(r.tnPico)}%</td>
+  </tr>`).join('')+`<tr><td colspan="5" style="padding:10px 14px;font-size:12px;color:var(--text3);text-align:center;border-top:1px solid var(--border)">Tasa de corte: caucion debe promediar menos de <strong style="color:var(--gold)">${n2(breakEven)}% TNA</strong> para que el carry sea positivo (spread actual: ${n2(spread)}pp)</td></tr>`;
+  document.getElementById('ct-results').style.display='block';
+}
+function syncCarryTna(){const rate=getTasaBase();if(rate>0)document.getElementById('ct-t').value=n2(rate);}
+// ===== FIN CARRY TRADE =====
 function refresh(){clearInterval(tmr);ld();tmr=setInterval(ld,5*60*1000);}
 document.querySelectorAll('.cnav-b').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.cnav-b').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cpanel').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById('panel-'+b.dataset.p).classList.add('on');if(b.dataset.p==='proyeccion')rPry();});});
 document.getElementById('pgrid').addEventListener('click',e=>{const b=e.target.closest('.pb');if(!b)return;document.querySelectorAll('.pb').forEach(x=>x.classList.remove('on'));b.classList.add('on');PL=parseInt(b.dataset.d);rCal();});

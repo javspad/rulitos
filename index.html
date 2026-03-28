@@ -239,7 +239,7 @@ select.finp{cursor:pointer;appearance:none;padding-right:34px}
   <section class="calc-sec" id="calculadora">
     <div class="sh"><span class="sh-t">Calculadora</span><div class="sh-r"></div><span class="sh-s">Caucion &middot; LECAPs &middot; Proyeccion &middot; Conversion</span></div>
     <div class="cshell">
-      <nav class="cnav"><button class="cnav-b on" data-p="caucion">Caucion vs. LECAPs</button><button class="cnav-b" data-p="proyeccion">Proyeccion de Plazos</button><button class="cnav-b" data-p="conv">Conversion ARS / USD</button><button class="cnav-b" data-p="rolling">Simulador Rolling</button></nav>
+      <nav class="cnav"><button class="cnav-b on" data-p="caucion">Caucion vs. LECAPs</button><button class="cnav-b" data-p="proyeccion">Proyeccion de Plazos</button><button class="cnav-b" data-p="conv">Conversion ARS / USD</button><button class="cnav-b" data-p="rolling">Simulador Rolling</button><button class="cnav-b" data-p="carry">Carry Caucion→LECAP</button></nav>
       <div class="cpanel on" id="panel-caucion">
         <div class="irow"><div class="fld"><label class="flbl" for="inp-m">Monto en pesos</label><input id="inp-m" class="finp" type="text" placeholder="$ 1.000.000" value="1000000" autocomplete="off"/></div><div class="fld"><label class="flbl" for="inp-t">TNA caucion (%)</label><input id="inp-t" class="finp" type="number" placeholder="35" value="35" step="0.1" min="0" max="999"/></div></div>
         <div class="plbl">Plazo</div>
@@ -292,6 +292,43 @@ select.finp{cursor:pointer;appearance:none;padding-right:34px}
           </div>
         </div>
         <div class="nota"><strong>Metodologia:</strong> Simulacion Monte Carlo con reinversion diaria compuesta. La TNA varia cada dia en forma aleatoria uniforme dentro del rango configurado. Tasa base tomada de MAE en tiempo real cuando disponible. No constituye asesoramiento financiero.</div>
+      </div>
+      <div class="cpanel" id="panel-carry">
+        <p style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.7">Tomás caución (te endeudás a tasa variable corta) e invertís ese dinero junto con tu capital propio en una LECAP (tasa fija). La ganancia es el <strong style="color:var(--gold)">spread LECAP − caución</strong>. El riesgo: que la tasa de caución suba y se coma —o invierta— el carry.</p>
+        <div id="ct-lec-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--text2);margin-bottom:20px">Calculando mejor LECAP...</div>
+        <div class="irow">
+          <div class="fld"><label class="flbl" for="ct-own">Capital propio ($)</label><input id="ct-own" class="finp" type="text" placeholder="$ 1.000.000" value="1000000" autocomplete="off"/></div>
+          <div class="fld"><label class="flbl" for="ct-borrow">Monto tomado en caucion ($)</label><input id="ct-borrow" class="finp" type="text" placeholder="$ 1.000.000" value="1000000" autocomplete="off"/></div>
+        </div>
+        <div class="irow">
+          <div class="fld"><label class="flbl" for="ct-t">TNA caucion base (%)</label><input id="ct-t" class="finp" type="number" value="35" step="0.1" min="0" max="999"/></div>
+          <div class="fld"><label class="flbl" for="ct-v">Variacion max escenarios (%)</label><input id="ct-v" class="finp" type="number" value="10" step="1" min="0" max="50"/></div>
+        </div>
+        <div class="irow" style="margin-bottom:8px">
+          <div class="fld"><label class="flbl" for="ct-s">Simulaciones</label><select id="ct-s" class="finp"><option value="100">100 escenarios</option><option value="500" selected>500 escenarios</option><option value="1000">1000 escenarios</option></select></div>
+          <div class="fld" style="justify-content:flex-end"><button onclick="runCarry()" style="margin-top:24px;padding:12px 28px;background:var(--gold);color:var(--bg);border:none;border-radius:6px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Simular carry</button></div>
+        </div>
+        <div id="ct-results" style="display:none">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px" id="ct-stats"></div>
+          <div style="border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:24px;margin-bottom:16px">
+            <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:var(--text);margin-bottom:4px">Distribucion de P&amp;L</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Verde = ganancia / Rojo = perdida. Linea azul = punto de equilibrio (P&amp;L = 0).</div>
+            <div style="position:relative;height:200px"><canvas id="ct-chart"></canvas></div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px">
+            <table style="width:100%;border-collapse:collapse;font-family:JetBrains Mono,monospace;font-size:12px">
+              <thead><tr>
+                <th style="background:var(--surface3);padding:10px 14px;font-family:DM Sans,sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);text-align:left;border-bottom:1px solid var(--border)">Escenario</th>
+                <th style="background:var(--surface3);padding:10px 14px;font-family:DM Sans,sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);text-align:right;border-bottom:1px solid var(--border)">P&amp;L neto</th>
+                <th style="background:var(--surface3);padding:10px 14px;font-family:DM Sans,sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);text-align:right;border-bottom:1px solid var(--border)">ROE (s/ capital propio)</th>
+                <th style="background:var(--surface3);padding:10px 14px;font-family:DM Sans,sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);text-align:right;border-bottom:1px solid var(--border)">TNA caucion promedio</th>
+                <th style="background:var(--surface3);padding:10px 14px;font-family:DM Sans,sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);text-align:right;border-bottom:1px solid var(--border)">Pico de tasa</th>
+              </tr></thead>
+              <tbody id="ct-table"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="nota"><strong>Metodologia:</strong> Tomas caucion diaria renovable (rolling). El capital propio + prestado se invierte en la LECAP de mayor spread. Al vencimiento: LECAP paga a tasa fija, la deuda se acumulo a tasa variable compuesta diaria. P&amp;L = cobro LECAP − deuda final − capital propio. No constituye asesoramiento financiero.</div>
       </div>
     </div>
   </section>
