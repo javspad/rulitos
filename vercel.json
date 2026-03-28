@@ -3,7 +3,7 @@
     "outputDirectory": ".",
     "functions": {
           "api/lecaps.js": {
-                  "maxDuration": 10
+                  "maxDuration": 15
           },
           "api/macro.js": {
                   "maxDuration": 10

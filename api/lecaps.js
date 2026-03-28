@@ -128,7 +128,7 @@ export default async function handler(req) {
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type':                 'application/json; charset=utf-8',
-    'Cache-Control':                'public, s-maxage=900, stale-while-revalidate=300',
+    'Cache-Control':                'public, s-maxage=3600, stale-while-revalidate=86400',
   };
 
   if (req.method === 'OPTIONS') {
@@ -138,7 +138,7 @@ export default async function handler(req) {
   // ── Intentar BYMA con timeout de 4 segundos ──
   try {
     const controller = new AbortController();
-    const timeout    = setTimeout(() => controller.abort(), 4000);
+    const timeout    = setTimeout(() => controller.abort(), 8000);
 
     // Endpoint público de BYMA para renta fija (sin autenticación)
     // Filtra letras capitalizables del Tesoro Nacional
@@ -154,7 +154,7 @@ export default async function handler(req) {
       const raw     = await bymaRes.json();
       const lecaps  = parseBYMA(raw);
 
-      if (lecaps.length >= 3) {
+      if (lecaps.length > 0) {
         // Tenemos datos reales suficientes
         return new Response(JSON.stringify({
           ok:     true,

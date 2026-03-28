@@ -45,11 +45,11 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como usuario, quiero que LECAPs cargue siempre sin 504, usando una estrategia de caché más agresiva cuando BYMA tarda.
 
 **Criterios de aceptación:**
-- [ ] En `api/lecaps.js` aumentar timeout interno a 8s
-- [ ] Cambiar `Cache-Control` a `s-maxage=3600, stale-while-revalidate=86400` (1h fresco, 24h stale)
-- [ ] Si BYMA responde con 0 LECAPs válidas (no solo <3), caer a fallback en vez de reintentar
-- [ ] En `vercel.json` aumentar `maxDuration` de lecaps a 15s
-- [ ] Verificar que `/api/lecaps` no retorna 504 en 3 intentos consecutivos
+- [x] En `api/lecaps.js` aumentar timeout interno a 8s
+- [x] Cambiar `Cache-Control` a `s-maxage=3600, stale-while-revalidate=86400` (1h fresco, 24h stale)
+- [x] Si BYMA responde con 0 LECAPs válidas (no solo <3), caer a fallback en vez de reintentar
+- [x] En `vercel.json` aumentar `maxDuration` de lecaps a 15s
+- [x] Verificar que `/api/lecaps` no retorna 504 en 3 intentos consecutivos
 
 ### US-003: Actualizar fallback LECAPs con instrumentos 2027
 **Descripción:** Como usuario, quiero que el fallback de LECAPs incluya instrumentos del año 2027 que ya están en el mercado.
