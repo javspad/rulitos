@@ -1,28 +1,65 @@
 export const config = { runtime: 'edge' };
 
-const API_KEY_UAT  = '1ypnPqtlG64lJIjrRN0DNut0hlIcQ502MiAbyo2g';
-const API_KEY_PROD = 'nuDX73vj2483KSUgvenkj9t50oA0vgvA4WcuRAER';
+const API_KEY_UAT  = (typeof process !== 'undefined' && process.env?.MAE_API_KEY_UAT)  || '';
+const API_KEY_PROD = (typeof process !== 'undefined' && process.env?.MAE_API_KEY_PROD) || '';
 const BASE_URL = 'https://servicios.mae.com.ar/api/v1';
 
-// Fallback hardcoded por si MAE no responde — actualizado mar-2026
+// Fallback hardcoded — actualizado mar-2026 (tasa pol. BCRA ~29%)
 const FALLBACK = [
-  { plazo: '001', codigoPlazo: '001', Ultimatasa: 38.0 },
-  { plazo: '007', codigoPlazo: '007', Ultimatasa: 38.5 },
-  { plazo: '030', codigoPlazo: '030', Ultimatasa: 39.0 },
-  { plazo: '060', codigoPlazo: '060', Ultimatasa: 39.5 },
-  { plazo: '090', codigoPlazo: '090', Ultimatasa: 40.0 },
+  { plazo: '001', codigoPlazo: '001', Ultimatasa: 29.0 },
+  { plazo: '007', codigoPlazo: '007', Ultimatasa: 29.5 },
+  { plazo: '030', codigoPlazo: '030', Ultimatasa: 30.0 },
+  { plazo: '060', codigoPlazo: '060', Ultimatasa: 30.5 },
+  { plazo: '090', codigoPlazo: '090', Ultimatasa: 31.0 },
 ];
+
+// BCRA v4.0 — variable 150: pases entre terceros 1d (proxy caución overnight)
+async function fetchBCRA() {
+  const today = new Date().toISOString().slice(0, 10);
+  const desde = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+  const c = new AbortController();
+  setTimeout(() => c.abort(), 5000);
+  try {
+    const r = await fetch(
+      `https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/150?desde=${desde}&hasta=${today}`,
+      { signal: c.signal, headers: { 'Accept': 'application/json', 'User-Agent': 'rulitos/1.0' } }
+    );
+    if (!r.ok) return null;
+    const data = await r.json();
+    const results = Array.isArray(data?.results) ? data.results : [];
+    if (!results.length) return null;
+    const sorted = [...results].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const overnight = parseFloat(sorted[0]?.valor);
+    if (!overnight || overnight <= 0) return null;
+    return [
+      { plazo: '001', codigoPlazo: '001', Ultimatasa: +overnight.toFixed(2) },
+      { plazo: '007', codigoPlazo: '007', Ultimatasa: +(overnight + 0.5).toFixed(2) },
+      { plazo: '030', codigoPlazo: '030', Ultimatasa: +(overnight + 1.0).toFixed(2) },
+      { plazo: '060', codigoPlazo: '060', Ultimatasa: +(overnight + 1.5).toFixed(2) },
+      { plazo: '090', codigoPlazo: '090', Ultimatasa: +(overnight + 2.0).toFixed(2) },
+    ];
+  } catch { return null; }
+}
 
 export default async function handler(req) {
   const h = {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=120',
+    'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=600',
   };
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
 
-  // Intentar con UAT primero, luego PROD
-  for (const key of [API_KEY_UAT, API_KEY_PROD]) {
+  // 1. BCRA v4.0 (pases entre terceros — proxy caución)
+  const bcraData = await fetchBCRA();
+  if (bcraData) {
+    return new Response(
+      JSON.stringify({ ok: true, source: 'bcra', ts: new Date().toISOString(), data: bcraData }),
+      { status: 200, headers: h }
+    );
+  }
+
+  // 2. MAE API (UAT primero, luego PROD)
+  for (const key of [API_KEY_UAT, API_KEY_PROD].filter(Boolean)) {
     try {
       const c = new AbortController();
       setTimeout(() => c.abort(), 4000);
@@ -33,13 +70,12 @@ export default async function handler(req) {
           'x-api-key': key,
           'Accept': 'application/json',
           'User-Agent': 'rulitos/1.0',
-        }
+        },
       });
       if (!r.ok) continue;
       const data = await r.json();
       const items = Array.isArray(data) ? data : (data?.data || data?.result || []);
       if (items.length > 0) {
-        // Agrupar por plazo, tomar ultima tasa
         const byPlazo = {};
         for (const item of items) {
           const p = item.codigoPlazo || item.plazo || '001';
@@ -51,12 +87,18 @@ export default async function handler(req) {
           .filter(i => i.Ultimatasa > 0)
           .sort((a, b) => parseInt(a.codigoPlazo) - parseInt(b.codigoPlazo));
         if (tasas.length >= 2) {
-          return new Response(JSON.stringify({ ok: true, source: 'mae', ts: new Date().toISOString(), data: tasas }), { status: 200, headers: h });
+          return new Response(
+            JSON.stringify({ ok: true, source: 'mae', ts: new Date().toISOString(), data: tasas }),
+            { status: 200, headers: h }
+          );
         }
       }
     } catch {}
   }
 
-  // Fallback
-  return new Response(JSON.stringify({ ok: true, source: 'fallback', ts: new Date().toISOString(), data: FALLBACK }), { status: 200, headers: h });
+  // 3. Fallback hardcoded
+  return new Response(
+    JSON.stringify({ ok: true, source: 'fallback', ts: new Date().toISOString(), data: FALLBACK }),
+    { status: 200, headers: h }
+  );
 }

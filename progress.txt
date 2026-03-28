@@ -1,0 +1,18 @@
+# Progress Log
+
+## Contexto inicial
+- index.html reconstruido (commit ed7a90d): 9x </body></html> duplicados eliminados
+- api/macro.js corregido: api.argentinadatos.com, plazoFijo camelCase, campo source
+- api/lecaps.js: edge runtime agregado
+- api/caucion.js: fallback actualizado a 38-40% mar-2026
+- vercel.json: caucion.js agregado a functions
+
+## Learnings
+- argentinadatos.com cambió base URL a api.argentinadatos.com (todos los endpoints)
+- argentinadatos plazoFijo usa camelCase en URL y tnaClientes en decimal (0.22 = 22%)
+- BYMA endpoint para lecaps: https://open.bymadata.com.ar/assets/json/letras-tesoro.json (lento, timeout frecuente)
+- MAE API keys (UAT y PROD) hardcodeadas en caucion.js — ambas fallan en produccion
+- Vercel usa CRLF en index.html (Windows line endings)
+- git config necesita user.email y user.name seteados localmente
+
+---
