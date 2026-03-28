@@ -65,11 +65,11 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como desarrollador, quiero que las API keys de MAE no estén hardcodeadas en el código fuente para no exponerlas en el repositorio público.
 
 **Criterios de aceptación:**
-- [ ] En `api/caucion.js` reemplazar las constantes `API_KEY_UAT` y `API_KEY_PROD` por `process.env.MAE_API_KEY_UAT` y `process.env.MAE_API_KEY_PROD`
-- [ ] Agregar fallback: si la env var no está definida, usar string vacío (la función MAE fallará y caerá a BYMA)
-- [ ] Crear archivo `.env.example` en la raíz con las variables documentadas (sin valores reales)
-- [ ] Actualizar `.gitignore` para incluir `.env` si no está ya
-- [ ] El comportamiento en producción no cambia si las env vars están seteadas en Vercel
+- [x] En `api/caucion.js` reemplazar las constantes `API_KEY_UAT` y `API_KEY_PROD` por `process.env.MAE_API_KEY_UAT` y `process.env.MAE_API_KEY_PROD`
+- [x] Agregar fallback: si la env var no está definida, usar string vacío (la función MAE fallará y caerá a BYMA)
+- [x] Crear archivo `.env.example` en la raíz con las variables documentadas (sin valores reales)
+- [x] Actualizar `.gitignore` para incluir `.env` si no está ya
+- [x] El comportamiento en producción no cambia si las env vars están seteadas en Vercel
 
 ### US-005: Agregar proxy /api/dolar
 **Descripción:** Como desarrollador, quiero que el frontend consuma dólar a través de un proxy propio para no depender directamente de dolarapi.com.
