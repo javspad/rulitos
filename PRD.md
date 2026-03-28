@@ -96,12 +96,12 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como usuario, quiero ver la Tasa de Política Monetaria (TAMAR) en el panel macro para tener referencia del piso de tasas del BCRA.
 
 **Criterios de aceptación:**
-- [ ] En `api/macro.js`, agregar fetch a `https://api.bcra.gob.ar/estadisticas/v2.0/datosvariable/6/2025-01-01/2026-12-31` (variable 6 = pases pasivos / tasa referencia)
-- [ ] Parsear el último valor de la serie: `data.results[data.results.length-1]` → `{ valor, fecha }`
-- [ ] Reemplazar `tamar: null` en la response con `{ valor, fecha }` o `null` si falla
-- [ ] En `index.html`, en la función `rMac()`, mostrar `tamar` en el panel macro: nuevo div con label "T. Política" y el valor en %
-- [ ] Si `tamar` es null, mostrar `--`
-- [ ] Verificar que el panel macro muestra 4 valores: Riesgo País, Inflación, T. Política, Plazo Fijo
+- [x] En `api/macro.js`, agregar fetch a `https://api.bcra.gob.ar/estadisticas/v2.0/datosvariable/6/2025-01-01/2026-12-31` (variable 6 = pases pasivos / tasa referencia)
+- [x] Parsear el último valor de la serie: `data.results[data.results.length-1]` → `{ valor, fecha }`
+- [x] Reemplazar `tamar: null` en la response con `{ valor, fecha }` o `null` si falla
+- [x] En `index.html`, en la función `rMac()`, mostrar `tamar` en el panel macro: nuevo div con label "T. Política" y el valor en %
+- [x] Si `tamar` es null, mostrar `--`
+- [x] Verificar que el panel macro muestra 4 valores: Riesgo País, Inflación, T. Política, Plazo Fijo
 
 ### US-008: Separar JavaScript de index.html a app.js
 **Descripción:** Como desarrollador, quiero que el código JavaScript esté en un archivo separado `app.js` para evitar el problema de ensamblado que causó la corrupción anterior.
