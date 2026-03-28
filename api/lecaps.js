@@ -33,6 +33,10 @@ const FALLBACK = [
   { especie:'S30O6', vto:'2026-10-30', tna:39.4 },
   { especie:'S27N6', vto:'2026-11-27', tna:39.6 },
   { especie:'S28D6', vto:'2026-12-28', tna:39.8 },
+  { especie:'S30E7', vto:'2027-01-30', tna:40.0 },
+  { especie:'S27F7', vto:'2027-02-27', tna:40.2 },
+  { especie:'S31M7', vto:'2027-03-31', tna:40.4 },
+  { especie:'S30A7', vto:'2027-04-30', tna:40.6 },
 ];
 
 // ─── Helpers matemáticos ─────────────────────────────────────────────────────

@@ -55,11 +55,11 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como usuario, quiero que el fallback de LECAPs incluya instrumentos del año 2027 que ya están en el mercado.
 
 **Criterios de aceptación:**
-- [ ] En `api/lecaps.js` agregar al array `FALLBACK` los siguientes instrumentos 2027: S30E7 (ene-27), S27F7 (feb-27), S31M7 (mar-27), S30A7 (abr-27)
-- [ ] TNAs aproximadas: 40.0%, 40.2%, 40.4%, 40.6%
-- [ ] `diasRestantes` se calcula dinámicamente (ya usa `diasR()`)
-- [ ] Los instrumentos vencidos se filtran automáticamente por `filter(l => diasR(l.vto) > 0)`
-- [ ] Verificar que fallback retorna al menos 9 items activos
+- [x] En `api/lecaps.js` agregar al array `FALLBACK` los siguientes instrumentos 2027: S30E7 (ene-27), S27F7 (feb-27), S31M7 (mar-27), S30A7 (abr-27)
+- [x] TNAs aproximadas: 40.0%, 40.2%, 40.4%, 40.6%
+- [x] `diasRestantes` se calcula dinámicamente (ya usa `diasR()`)
+- [x] Los instrumentos vencidos se filtran automáticamente por `filter(l => diasR(l.vto) > 0)`
+- [x] Verificar que fallback retorna al menos 9 items activos
 
 ### US-004: Mover API keys de MAE a variables de entorno
 **Descripción:** Como desarrollador, quiero que las API keys de MAE no estén hardcodeadas en el código fuente para no exponerlas en el repositorio público.
