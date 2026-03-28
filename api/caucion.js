@@ -4,13 +4,13 @@ const API_KEY_UAT  = (typeof process !== 'undefined' && process.env?.MAE_API_KEY
 const API_KEY_PROD = (typeof process !== 'undefined' && process.env?.MAE_API_KEY_PROD) || '';
 const BASE_URL = 'https://servicios.mae.com.ar/api/v1';
 
-// Fallback hardcoded — actualizado mar-2026 (tasa pol. BCRA ~29%)
+// Fallback hardcoded — actualizado mar-2026 (mercado caucion ~35%)
 const FALLBACK = [
-  { plazo: '001', codigoPlazo: '001', Ultimatasa: 29.0 },
-  { plazo: '007', codigoPlazo: '007', Ultimatasa: 29.5 },
-  { plazo: '030', codigoPlazo: '030', Ultimatasa: 30.0 },
-  { plazo: '060', codigoPlazo: '060', Ultimatasa: 30.5 },
-  { plazo: '090', codigoPlazo: '090', Ultimatasa: 31.0 },
+  { plazo: '001', codigoPlazo: '001', Ultimatasa: 35.0 },
+  { plazo: '007', codigoPlazo: '007', Ultimatasa: 35.5 },
+  { plazo: '030', codigoPlazo: '030', Ultimatasa: 36.0 },
+  { plazo: '060', codigoPlazo: '060', Ultimatasa: 36.5 },
+  { plazo: '090', codigoPlazo: '090', Ultimatasa: 37.0 },
 ];
 
 // BCRA v4.0 — variable 150: pases entre terceros 1d (proxy caución overnight)
@@ -30,13 +30,16 @@ async function fetchBCRA() {
     if (!results.length) return null;
     const sorted = [...results].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     const overnight = parseFloat(sorted[0]?.valor);
-    if (!overnight || overnight <= 0) return null;
+    if (!overnight || overnight <= 0 || overnight > 200) return null;
+    // Si el BCRA devuelve menos de 20%, probablemente es pases pasivos (no caución de mercado)
+    // En ese caso usamos como piso para la curva pero no como proxy directo
+    const base = overnight < 20 ? FALLBACK[0].Ultimatasa : overnight;
     return [
-      { plazo: '001', codigoPlazo: '001', Ultimatasa: +overnight.toFixed(2) },
-      { plazo: '007', codigoPlazo: '007', Ultimatasa: +(overnight + 0.5).toFixed(2) },
-      { plazo: '030', codigoPlazo: '030', Ultimatasa: +(overnight + 1.0).toFixed(2) },
-      { plazo: '060', codigoPlazo: '060', Ultimatasa: +(overnight + 1.5).toFixed(2) },
-      { plazo: '090', codigoPlazo: '090', Ultimatasa: +(overnight + 2.0).toFixed(2) },
+      { plazo: '001', codigoPlazo: '001', Ultimatasa: +base.toFixed(2) },
+      { plazo: '007', codigoPlazo: '007', Ultimatasa: +(base + 0.5).toFixed(2) },
+      { plazo: '030', codigoPlazo: '030', Ultimatasa: +(base + 1.0).toFixed(2) },
+      { plazo: '060', codigoPlazo: '060', Ultimatasa: +(base + 1.5).toFixed(2) },
+      { plazo: '090', codigoPlazo: '090', Ultimatasa: +(base + 2.0).toFixed(2) },
     ];
   } catch { return null; }
 }
