@@ -10,6 +10,9 @@
           },
           "api/caucion.js": {
                   "maxDuration": 10
+          },
+          "api/dolar.js": {
+                  "maxDuration": 10
           }
     },
     "headers": [

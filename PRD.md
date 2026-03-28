@@ -75,13 +75,13 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como desarrollador, quiero que el frontend consuma dólar a través de un proxy propio para no depender directamente de dolarapi.com.
 
 **Criterios de aceptación:**
-- [ ] Crear `api/dolar.js` como Edge Function
-- [ ] Hacer fetch a `https://dolarapi.com/v1/dolares` con timeout 5s
-- [ ] Mismo patrón de CORS y `Cache-Control: s-maxage=300, stale-while-revalidate=120`
-- [ ] Fallback hardcoded con 7 tipos de cambio con valores aproximados actuales (no puede quedar vacío)
-- [ ] `export const config = { runtime: 'edge' }`
-- [ ] Agregar `api/dolar.js` a `vercel.json` functions con `maxDuration: 10`
-- [ ] En `index.html`, cambiar la llamada en `fa()` de `'https://dolarapi.com/v1/dolares'` a `'/api/dolar'`
+- [x] Crear `api/dolar.js` como Edge Function
+- [x] Hacer fetch a `https://dolarapi.com/v1/dolares` con timeout 5s
+- [x] Mismo patrón de CORS y `Cache-Control: s-maxage=300, stale-while-revalidate=120`
+- [x] Fallback hardcoded con 7 tipos de cambio con valores aproximados actuales (no puede quedar vacío)
+- [x] `export const config = { runtime: 'edge' }`
+- [x] Agregar `api/dolar.js` a `vercel.json` functions con `maxDuration: 10`
+- [x] En `index.html`, cambiar la llamada en `fa()` de `'https://dolarapi.com/v1/dolares'` a `'/api/dolar'`
 
 ### US-006: Mejorar indicador live/fallback en UI
 **Descripción:** Como usuario, quiero saber claramente qué datos son en tiempo real y cuáles son de referencia, con indicadores más visibles.
