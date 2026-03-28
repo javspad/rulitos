@@ -4,14 +4,15 @@
  * Offline: muestra última cotización cacheada con banner de aviso
  */
 
-const CACHE_NAME   = 'rulitos-v3';
-const STATIC_CACHE = 'rulitos-static-v3';
-const DATA_CACHE   = 'rulitos-data-v3';
+const CACHE_NAME   = 'rulitos-v4';
+const STATIC_CACHE = 'rulitos-static-v4';
+const DATA_CACHE   = 'rulitos-data-v4';
 
 // Assets estáticos a pre-cachear en install
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/app.js',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
 ];
 

@@ -128,9 +128,9 @@ Dashboard financiero argentino en Vercel. El diagnóstico detectó APIs caídas,
 **Descripción:** Como usuario, quiero que el dashboard muestre los últimos datos disponibles cuando no tengo conexión, en lugar de una pantalla vacía.
 
 **Criterios de aceptación:**
-- [ ] En `app.js` (o `index.html`), después de cada fetch exitoso guardar en `localStorage`: `localStorage.setItem('rulitos-cache', JSON.stringify({dol, lec, mac, cau, ts: Date.now()}))`
-- [ ] Al inicio de `fa()`, si el fetch falla (o mientras carga), intentar leer de `localStorage` como datos de respaldo
-- [ ] Si se usan datos de caché localStorage, el indicador superior muestra "Caché local — [hora del cache]" en color amarillo/naranja en vez de rojo error
-- [ ] El caché de localStorage expira después de 24 horas (no mostrar datos de más de 24h)
-- [ ] Actualizar `sw.js` para que precachee `app.js` además de los assets ya cacheados
-- [ ] Verificar que desconectando la red el dashboard muestra datos (los del último fetch) y no una pantalla vacía
+- [x] En `app.js` (o `index.html`), después de cada fetch exitoso guardar en `localStorage`: `localStorage.setItem('rulitos-cache', JSON.stringify({dol, lec, mac, cau, ts: Date.now()}))`
+- [x] Al inicio de `fa()`, si el fetch falla (o mientras carga), intentar leer de `localStorage` como datos de respaldo
+- [x] Si se usan datos de caché localStorage, el indicador superior muestra "Caché local — [hora del cache]" en color amarillo/naranja en vez de rojo error
+- [x] El caché de localStorage expira después de 24 horas (no mostrar datos de más de 24h)
+- [x] Actualizar `sw.js` para que precachee `app.js` además de los assets ya cacheados
+- [x] Verificar que desconectando la red el dashboard muestra datos (los del último fetch) y no una pantalla vacía
