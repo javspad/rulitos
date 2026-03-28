@@ -16,3 +16,70 @@
 - git config necesita user.email y user.name seteados localmente
 
 ---
+
+## Iteración final — US-001 a US-010 completadas (2026-03-28)
+
+### US-001: Caucion live via BCRA v4.0
+- api/caucion.js reescrito: BCRA v4.0 variable 150 (pases entre terceros) como fuente primaria
+- Construye curva 5 plazos desde overnight: +0, +0.5, +1.0, +1.5, +2.0pp
+- MAE API (env vars) como segundo intento, fallback hardcoded 29-31% como tercero
+
+### US-002: LECAPs timeout fix
+- Timeout interno: 5s → 8s
+- Cache-Control: s-maxage=3600, stale-while-revalidate=86400
+- maxDuration vercel.json: 10 → 15s
+- Cae a fallback si BYMA devuelve 0 LECAPs válidas
+
+### US-003: Fallback LECAPs 2027
+- Agregados S30E7, S27F7, S31M7, S30A7 (TNAs 40.0-40.6%)
+
+### US-004: MAE API keys a env vars
+- caucion.js ya usaba process.env (confirmado)
+- .env.example creado, .gitignore actualizado con .env
+
+### US-005: Proxy /api/dolar
+- api/dolar.js creado como Edge Function
+- Fallback hardcoded con 7 tipos de cambio
+- fa() en app.js apunta a '/api/dolar' en vez de dolarapi.com directamente
+
+### US-006: Indicadores live/fallback mejorados
+- CSRC variable agregada para trackear fuente de caución
+- Header muestra "En vivo — Dólar, Macro, LECAPs" o "Parcial — Sin X"
+- Plazo Fijo panel: mc-src agregado en HTML + JS, verde/gris según datos
+
+### US-007: TAMAR via BCRA v4.0
+- macro.js: fetch BCRA v4.0 variable 6 (tasa política monetaria)
+- Nuevo card en macro grid con valor TNA + fecha
+- Source indicator (BCRA / sin datos)
+
+### US-008: Separar JS a app.js
+- 179 líneas JS extraídas de index.html a /app.js
+- index.html ahora tiene solo <script src="/app.js" defer>
+- Chart.js CDN script permanece antes de app.js
+
+### US-009: Historial riesgo país
+- macro.js: fetch argentinadatos riesgo-pais serie completa, últimos 90 puntos
+- Canvas #rp-chart debajo del macro grid (display:none si sin datos)
+- Chart.js minimal: línea dorada, sin ejes, sin leyenda
+
+### US-010: PWA offline localStorage cache
+- saveCache() / loadCache() en app.js con TTL 24h
+- fa() guarda cache tras fetch exitoso
+- ld() usa loadCache() en caso de error de red
+- Header amarillo "Caché local — HH:MM" cuando usa cache
+- sw.js v4: precachea /app.js, limpia caches v3
+
+## Archivos modificados en esta sesión:
+- api/caucion.js (reescrito US-001)
+- api/lecaps.js (US-002, US-003)
+- api/macro.js (US-007, US-009)
+- api/dolar.js (nuevo, US-005)
+- app.js (nuevo, US-008 + cambios US-006/010)
+- index.html (US-005, US-006, US-007, US-008, US-009)
+- vercel.json (US-002, US-005)
+- sw.js (US-010)
+- .env.example (nuevo, US-004)
+- .gitignore (US-004)
+- PRD.md (todas las stories marcadas [x])
+
+---
