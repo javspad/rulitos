@@ -11,6 +11,7 @@ const FALLBACK = [
   { plazo: '030', codigoPlazo: '030', Ultimatasa: 36.0 },
   { plazo: '060', codigoPlazo: '060', Ultimatasa: 36.5 },
   { plazo: '090', codigoPlazo: '090', Ultimatasa: 37.0 },
+  { plazo: '180', codigoPlazo: '180', Ultimatasa: 37.5 },
 ];
 
 // BCRA v4.0 — variable 150: pases entre terceros 1d (proxy caución overnight)
