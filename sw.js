@@ -4,15 +4,15 @@
  * Offline: muestra última cotización cacheada con banner de aviso
  */
 
-const CACHE_NAME   = 'rulitos-v4';
-const STATIC_CACHE = 'rulitos-static-v4';
-const DATA_CACHE   = 'rulitos-data-v4';
+const CACHE_NAME   = 'rulitos-v5';
+const STATIC_CACHE = 'rulitos-static-v5';
+const DATA_CACHE   = 'rulitos-data-v5';
 
 // Assets estáticos a pre-cachear en install
+// app.js fue eliminado — el JS está inline en index.html
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/app.js',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
 ];
 
@@ -38,7 +38,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k !== STATIC_CACHE && k !== DATA_CACHE)
+          .filter(k => k !== STATIC_CACHE && k !== DATA_CACHE && !k.startsWith('rulitos-v5'))
           .map(k => caches.delete(k))
       )
     ).then(() => self.clients.claim())
