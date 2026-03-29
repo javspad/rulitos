@@ -291,16 +291,27 @@ select.finp{cursor:pointer;appearance:none;padding-right:34px}
             </table>
           </div>
         </div>
+        <div id="cy-comparativo" style="display:none;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:24px;margin-bottom:20px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text);margin-bottom:4px">Comparativo &mdash; Todas las LECAPs con Rolling Cau&oacute;n</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px">P&amp;L esperado (caso base) por LECAP tomando cauc&oacute;n a tasa fija y renovando diariamente</div>
+          <div id="cy-comp-banner" style="font-size:11px;color:var(--text4);margin-bottom:16px"></div>
+          <div style="position:relative;height:260px"><canvas id="cy-comp-chart"></canvas></div>
+          <div style="margin-top:16px;overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px" id="cy-comp-table"></table>
+          </div>
+        </div>
         <div class="nota"><strong>Metodologia:</strong> Simulacion Monte Carlo con reinversion diaria compuesta. La TNA varia cada dia en forma aleatoria uniforme dentro del rango configurado. Tasa base tomada de MAE en tiempo real cuando disponible. No constituye asesoramiento financiero.</div>
       </div>
       <div class="cpanel" id="panel-carry">
         <p style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.7">Tomás caución (te endeudás a tasa variable corta) e invertís ese dinero junto con tu capital propio en una LECAP (tasa fija). La ganancia es el <strong style="color:var(--gold)">spread LECAP − caución</strong>. El riesgo: que la tasa de caución suba y se coma —o invierta— el carry.</p>
-        <div id="ct-lec-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--text2);margin-bottom:20px">Calculando mejor LECAP...</div>
+        <div id="ct-lec-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--text2);margin-bottom:12px">Calculando mejor LECAP...</div>
+        <div id="cy-banner" style="background:var(--surface2);border:1px solid var(--border-s);border-radius:8px;padding:12px 18px;font-size:12px;color:var(--text2);margin-bottom:20px;display:none"></div>
         <div class="irow">
           <div class="fld"><label class="flbl" for="ct-own">Capital propio ($)</label><input id="ct-own" class="finp" type="text" placeholder="$ 1.000.000" value="1000000" autocomplete="off"/></div>
           <div class="fld"><label class="flbl" for="ct-borrow">Monto tomado en caucion ($)</label><input id="ct-borrow" class="finp" type="text" placeholder="$ 1.000.000" value="1000000" autocomplete="off"/></div>
         </div>
         <div class="irow">
+          <div class="fld"><label class="flbl" for="cy-lec">LECAP objetivo</label><select id="cy-lec" class="finp" onchange="actualizarBannerCarry()"><option>Cargando LECAPs...</option></select></div>
           <div class="fld"><label class="flbl" for="ct-t">TNA caucion base (%)</label><input id="ct-t" class="finp" type="number" value="35" step="0.1" min="0" max="999"/></div>
           <div class="fld"><label class="flbl" for="ct-v">Variacion max escenarios (%)</label><input id="ct-v" class="finp" type="number" value="10" step="1" min="0" max="50"/></div>
         </div>
@@ -601,11 +612,123 @@ function runCarry(){
     <td style="padding:9px 14px;text-align:right;color:var(--text3);font-family:JetBrains Mono,monospace">${n2(r.tnPico)}%</td>
   </tr>`).join('')+`<tr><td colspan="5" style="padding:10px 14px;font-size:12px;color:var(--text3);text-align:center;border-top:1px solid var(--border)">Tasa de corte: caucion debe promediar menos de <strong style="color:var(--gold)">${n2(breakEven)}% TNA</strong> para que el carry sea positivo (spread actual: ${n2(spread)}pp)</td></tr>`;
   document.getElementById('ct-results').style.display='block';
+  renderComparativo(capPropio,capPrestado,tnCauBase,varMax,nSim);
 }
 function syncCarryTna(){const rate=getTasaBase();if(rate>0)document.getElementById('ct-t').value=n2(rate);}
 // ===== FIN CARRY TRADE =====
+function populateCarryLec(){
+  var sel=document.getElementById('cy-lec');
+  if(!sel)return;
+  var vigs=LEC.filter(function(l){return(l.diasRestantes||0)>0;}).sort(function(a,b){return a.diasRestantes-b.diasRestantes;});
+  if(!vigs.length){sel.innerHTML='<option>Sin LECAPs disponibles</option>';return;}
+  var tnCau=getTasaBase();
+  sel.innerHTML=vigs.map(function(l){
+    var spread=(l.tna-tnCau).toFixed(2);
+    var spreadStr=spread>0?'+'+spread+'pp':spread+'pp';
+    return '<option value="'+l.especie+'">'+l.especie+' \u2014 TNA '+l.tna+'% \u2014 '+l.diasRestantes+'d \u2014 spread '+spreadStr+'</option>';
+  }).join('');
+  actualizarBannerCarry();
+}
+function actualizarBannerCarry(){
+  var sel=document.getElementById('cy-lec');
+  var banner=document.getElementById('cy-banner');
+  if(!sel||!banner)return;
+  var lec=LEC.find(function(l){return l.especie===sel.value;});
+  if(!lec){banner.style.display='none';return;}
+  var tnCau=getTasaBase();
+  var spread=(lec.tna-tnCau).toFixed(2);
+  var color=spread>0?'var(--green)':'var(--red)';
+  banner.style.display='block';
+  banner.innerHTML='LECAP seleccionada: <strong>'+lec.especie+'</strong> &mdash; TNA <strong>'+lec.tna+'%</strong> &mdash; vence en <strong>'+lec.diasRestantes+' d\u00edas</strong> &mdash; spread: <strong style="color:'+color+'">'+(spread>0?'+':'')+spread+'pp</strong>';
+}
+var _cyCompChart=null;
+function renderComparativo(cp,mc,tnBase,varMax,nSim){
+  var vigs=LEC.filter(function(l){return(l.diasRestantes||0)>0;}).sort(function(a,b){return a.diasRestantes-b.diasRestantes;});
+  if(!vigs.length)return;
+  var isDk=document.documentElement.getAttribute('data-theme')==='dark';
+  var gc=isDk?'rgba(44,44,40,.5)':'rgba(180,175,166,.4)';
+  var tk=isDk?'#585450':'#a0988e';
+  var datos=vigs.map(function(lec){
+    var dias=lec.diasRestantes;
+    var capitalTotal=cp+mc;
+    var ganLec=lcR(capitalTotal,lec.tna,dias).i;
+    var costoCauBase=mc*(tnBase/100/365)*dias;
+    var pnlBase=ganLec-costoCauBase;
+    var roeBase=pnlBase/cp*100;
+    var tasaCorte=(ganLec/mc)*100*365/dias;
+    var spread=lec.tna-tnBase;
+    var sims=Math.min(nSim,200);
+    var ganadores=0;
+    for(var s=0;s<sims;s++){
+      var costoCau=0;
+      for(var d=0;d<dias;d++){
+        var delta=(Math.random()*2-1)*(varMax/100)*tnBase;
+        costoCau+=mc*(Math.max(1,tnBase+delta)/100/365);
+      }
+      if(ganLec-costoCau>0)ganadores++;
+    }
+    return{especie:lec.especie,tna:lec.tna,dias:dias,pnlBase:pnlBase,roeBase:roeBase,tasaCorte:tasaCorte,pctGan:ganadores/sims*100,spread:spread};
+  });
+  var best=datos.reduce(function(a,b){return b.pnlBase>a.pnlBase?b:a;});
+  var compBanner=document.getElementById('cy-comp-banner');
+  if(compBanner)compBanner.innerHTML='Mejor opci\u00f3n: <strong style="color:var(--gold)">'+best.especie+'</strong> &mdash; P&amp;L base $'+nm(best.pnlBase)+' &mdash; ROE '+n2(best.roeBase)+'% &mdash; Tasa de corte '+n2(best.tasaCorte)+'%';
+  var pnls=datos.map(function(d){return Math.round(d.pnlBase);});
+  var barColors=datos.map(function(d){
+    if(d.pnlBase<=0)return 'rgba(212,97,78,.8)';
+    if(d.pctGan>=80)return 'rgba(90,184,126,.85)';
+    if(d.pctGan>=50)return 'rgba(212,168,67,.85)';
+    return 'rgba(212,168,67,.5)';
+  });
+  if(_cyCompChart){_cyCompChart.destroy();_cyCompChart=null;}
+  var ctx=document.getElementById('cy-comp-chart');
+  if(!ctx)return;
+  _cyCompChart=new Chart(ctx.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:datos.map(function(d){return d.especie;}),
+      datasets:[
+        {label:'P&L caso base ($)',data:pnls,backgroundColor:barColors,borderColor:barColors.map(function(c){return c.replace(/\.\d+\)$/,'1)');}),borderWidth:1,borderRadius:4},
+        {label:'Tasa de corte (%)',data:datos.map(function(d){return Math.round(d.tasaCorte*10)/10;}),type:'line',borderColor:isDk?'#5a9fbe':'#1a6080',backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],pointRadius:4,pointBackgroundColor:isDk?'#5a9fbe':'#1a6080',yAxisID:'y2'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,labels:{color:tk,font:{size:11},boxWidth:12}},
+        tooltip:{backgroundColor:isDk?'#1e1e1a':'#fff',borderColor:isDk?'#323230':'#d4cfc6',borderWidth:1,
+          callbacks:{afterBody:function(items){var d=datos[items[0].dataIndex];return['ROE: '+n2(d.roeBase)+'%','Spread: '+(d.spread>0?'+':'')+n2(d.spread)+'pp','% Ganadores: '+n2(d.pctGan)+'%','Plazo: '+d.dias+'d'];}}}
+      },
+      scales:{
+        x:{grid:{color:gc},ticks:{color:tk}},
+        y:{grid:{color:gc},ticks:{color:tk,callback:function(v){return '$'+nm(v);}},title:{display:true,text:'P&L ($)',color:tk,font:{size:11}}},
+        y2:{position:'right',grid:{drawOnChartArea:false},ticks:{color:isDk?'#5a9fbe':'#1a6080',callback:function(v){return v+'%';}},title:{display:true,text:'Tasa de corte (%)',color:isDk?'#5a9fbe':'#1a6080',font:{size:11}}}
+      }
+    }
+  });
+  var thCells=['LECAP','TNA','D\u00edas','Spread','P&amp;L Base','ROE','Tasa Corte','% Ganadores'].map(function(h){
+    return '<th style="background:var(--surface3);padding:9px 12px;font-family:DM Sans,sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);text-align:right;border-bottom:1px solid var(--border)">'+h+'</th>';
+  }).join('');
+  var tbRows=datos.map(function(d){
+    var win=d.especie===best.especie;
+    return '<tr style="'+(win?'background:rgba(212,168,67,.06)':'')+'">'+
+      '<td style="padding:8px 12px;'+(win?'border-left:2px solid var(--gold-d);':'')+';color:var(--text);font-weight:'+(win?'700':'400')+'">'+d.especie+(win?' \u2605':'')+'</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:var(--gold)">'+n2(d.tna)+'%</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:var(--text3)">'+d.dias+'</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:'+(d.spread>0?'var(--green)':'var(--red)')+'">'+n2(d.spread)+'pp</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:'+(d.pnlBase>0?'var(--green)':'var(--red)')+'">$'+nm(d.pnlBase)+'</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:'+(d.roeBase>0?'var(--green)':'var(--red)')+'">'+n2(d.roeBase)+'%</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:var(--blue)">'+n2(d.tasaCorte)+'%</td>'+
+      '<td style="padding:8px 12px;text-align:right;color:'+(d.pctGan>=50?'var(--green)':'var(--red)')+'">'+n2(d.pctGan)+'%</td>'+
+      '</tr>';
+  }).join('');
+  var tbl=document.getElementById('cy-comp-table');
+  if(tbl)tbl.innerHTML='<thead><tr>'+thCells+'</tr></thead><tbody>'+tbRows+'</tbody>';
+  var comp=document.getElementById('cy-comparativo');
+  if(comp)comp.style.display='block';
+}
 function refresh(){clearInterval(tmr);ld();tmr=setInterval(ld,5*60*1000);}
-document.querySelectorAll('.cnav-b').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.cnav-b').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cpanel').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById('panel-'+b.dataset.p).classList.add('on');if(b.dataset.p==='proyeccion')rPry();});});
+document.querySelectorAll('.cnav-b').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.cnav-b').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cpanel').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById('panel-'+b.dataset.p).classList.add('on');if(b.dataset.p==='proyeccion')rPry();if(b.dataset.p==='carry'){populateCarryLec();var selLec=document.getElementById('cy-lec');if(selLec&&!selLec._ca){selLec.addEventListener('change',actualizarBannerCarry);selLec._ca=true;}if(typeof LEC!=='undefined'&&LEC.length){var cp2=parseFloat((document.getElementById('ct-own')||{}).value||'1000000')||1000000;var mc2=parseFloat((document.getElementById('ct-borrow')||{}).value||'1000000')||1000000;renderComparativo(cp2,mc2,getTasaBase(),10,200);}}});});
 document.getElementById('pgrid').addEventListener('click',e=>{const b=e.target.closest('.pb');if(!b)return;document.querySelectorAll('.pb').forEach(x=>x.classList.remove('on'));b.classList.add('on');PL=parseInt(b.dataset.d);rCal();});
 let dC,dP,dV;
 ['inp-m','inp-t'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{clearTimeout(dC);dC=setTimeout(rCal,130);}));
